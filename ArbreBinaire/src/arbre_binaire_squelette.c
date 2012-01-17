@@ -126,7 +126,7 @@ t_element * supprimer_min(t_arbre* a)
 	 else
 	 {
 		 t_arbre *tmpArbre = a;
-		 a = a->droit;
+		 a = a->droit;//bizarre tout ça
 		 return tmpArbre->valeur;
 	 }
 }
@@ -161,14 +161,14 @@ t_element * supprimer_min(t_arbre* a)
 					 else
 					 {
 						 t_arbre *tmp =a->gauche;
-						 detruire_noeud_arbre(a);
+						 detruire_noeud_arbre(a);//faire plutot detruire arbre
 						 return tmp;
 					 }
 				 }
 				 else
 				 {
 					 t_arbre *tmp =a->droit;
-					 detruire_noeud_arbre(a);
+					 detruire_noeud_arbre(a);//faire plutot detruire arbre
 					 return tmp;
 				 }
 			 }
@@ -315,7 +315,7 @@ t_arbre *rotation_droite ( t_arbre *y )
 	if (y->hauteur > h)
 	{
 		y->hauteur = h + 1;
-	}
+	}//changer hauteur de x aussi
 	return x;
 }
 
@@ -339,11 +339,11 @@ t_arbre *rotation_gauche ( t_arbre *x )
 	if (x->hauteur > h)
 	{
 		x->hauteur = h + 1;
-	}
+	}//idem
 	return y;
 }
 
-t_arbre *equilibrer_arbre ( t_arbre *a )
+t_arbre *equilibrer_arbre ( t_arbre *a )//peut être à refaire
 {
 	if (a)
 	{
