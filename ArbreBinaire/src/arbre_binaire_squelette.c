@@ -525,11 +525,11 @@ t_arbre * equilibrer ( t_arbre * a )
 				}
 				else
 				{
-					if(a->gauche->gauche->hauteur > 0)
-					{
+//					if(a->gauche->gauche->hauteur > 0)  //ça peut mieux équilibrer quand on a 3 noeuds qui se suivent exclusivement dans un sens
+//					{
 						a = rotation_droite(a);
 						return equilibrer(a);
-					}
+//					}
 					a->gauche = equilibrer(a->gauche);
 					return(a);
 				}
@@ -556,11 +556,11 @@ t_arbre * equilibrer ( t_arbre * a )
 				}
 				else
 				{
-					if(a->droit->droit->hauteur > 0)
-					{
+//					if(a->droit->droit->hauteur > 0)
+//					{
 						a = rotation_gauche(a);
 						return equilibrer(a);
-					}
+//					}
 					a->droit = equilibrer(a->droit);
 					return(a);
 				}
@@ -587,7 +587,7 @@ t_arbre * equilibrer ( t_arbre * a )
 		clock_t t1, t2, t3, t4;
 		srand ( time ( NULL ) );
 //	t1 = clock();
-		t_arbre *a = creer_arbre_fichier ( "dico.txt" );
+		t_arbre *a = creer_arbre_fichier ( "dico3.txt" );
 //	t2 = clock();
 		calculer_hauteur ( a );
 
@@ -610,13 +610,16 @@ t_arbre * equilibrer ( t_arbre * a )
 
 //	afficher_arbre(a);
 //	 a = equilibrer_arbre(a);
-		afficher_arbre ( a );
+		//afficher_arbre ( a );
+		printf(" hauteur max avant equilibrage : %d",a->hauteur);
 		printf ( "\n\n" );
 //		supprimer_arbre ( a, creer_elt_str ( "abandoning" ) );
 //		calculer_hauteur ( a );
 		a = equilibrer(a);
+		calculer_hauteur(a);
+		printf(" hauteur max apres equlibrage : %d",a->hauteur);
 		//calculer_hauteur(a);
-		afficher_arbre ( a );
+		//afficher_arbre ( a );
 		// a = supprimer_arbre(a,creer_elt_str("abandonment"));
 		//calculer_hauteur(a);
 		//afficher_arbre(a);
