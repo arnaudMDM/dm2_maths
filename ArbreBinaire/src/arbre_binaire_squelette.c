@@ -223,6 +223,7 @@ t_arbre *rechercher_arbre ( t_arbre *a, t_element *e )
 		return NULL;
 	}
 }
+long hauteurMax = 0;
 // rechercher l'ensemble des mots du fichier de nom f
 void rechercher_arbre_fichier ( t_arbre *a, char *f )
 {
@@ -238,8 +239,7 @@ void rechercher_arbre_fichier ( t_arbre *a, char *f )
 			noeud = rechercher_arbre ( a, creer_elt_str ( chaine ) );
 			if ( noeud )
 			{
-				printf ( "%s \t trouve a la hauteur : \t %d\n", chaine,
-				        noeud->hauteur );
+				 hauteurMax += noeud->hauteur ;
 			}
 			else
 			{
@@ -251,6 +251,7 @@ void rechercher_arbre_fichier ( t_arbre *a, char *f )
 }
 
 // calculer la hauteur des noeuds du t_arbre a
+long long sommeHauteur = 0;
 void calculer_hauteur ( t_arbre *a )
 {
 	if ( a )
@@ -271,6 +272,7 @@ void calculer_hauteur ( t_arbre *a )
 			}
 
 			a->hauteur = h + 1;
+			sommeHauteur += a->hauteur;
 		}
 		else
 		{
@@ -278,6 +280,7 @@ void calculer_hauteur ( t_arbre *a )
 			{
 				calculer_hauteur ( a->droit );
 				a->hauteur = a->droit->hauteur + 1;
+				sommeHauteur += a->hauteur;
 			}
 			//Feuille
 			else
@@ -581,59 +584,62 @@ t_arbre * equilibrer ( t_arbre * a )
 		return NULL;
 	}
 }
-	int main ( int argc, char *argv[] )
+
+int parcours(t_arbre *a)
+{
+	if(a)
 	{
-		long clk_tck = CLOCKS_PER_SEC;
-		clock_t t1, t2, t3, t4;
-		srand ( time ( NULL ) );
-//	t1 = clock();
-		t_arbre *a = creer_arbre_fichier ( "dico3.txt" );
-//	t2 = clock();
-		calculer_hauteur ( a );
+		return parcours(a->gauche) + parcours(a->droit)+1;
+	}
+	return 0;
+}
 
-//	t1 = clock();
-//	int i;
-//	for(i = 0; i< 100;i++)
-//	{
-//		rechercher_arbre_fichier(a, "a_rechercher.txt");
-//	}
-//	t2 = clock();
-//	a = equilibrer_arbre(a);
-//	t3 = clock();
-//	for(i = 0; i < 100; i++)
-//	{
-//		rechercher_arbre_fichier(a, "a_rechercher.txt");
-//	}
-//	t4 = clock();
+	int main(int argc, char *argv[]) {
+	long clk_tck = CLOCKS_PER_SEC;
+	clock_t t1, t2, t3, t4;
+	srand(time(NULL));
 
-//	t3 = clock();
+	t_arbre *a = creer_arbre_fichier("dico1.txt");
+	calculer_hauteur(a);
+	printf("hauteur max avant equi %d %d\n",a->hauteur,parcours(a));
+	rechercher_arbre_fichier(a, "a_rechercher.txt");
+	printf("somme hauteurs %d\n",sommeHauteur);
 
-//	afficher_arbre(a);
-//	 a = equilibrer_arbre(a);
-		//afficher_arbre ( a );
-		printf(" hauteur max avant equilibrage : %d",a->hauteur);
-		printf ( "\n\n" );
-//		supprimer_arbre ( a, creer_elt_str ( "abandoning" ) );
-//		calculer_hauteur ( a );
-		a = equilibrer(a);
-		calculer_hauteur(a);
-		printf(" hauteur max apres equlibrage : %d",a->hauteur);
-		//calculer_hauteur(a);
-		//afficher_arbre ( a );
-		// a = supprimer_arbre(a,creer_elt_str("abandonment"));
-		//calculer_hauteur(a);
-		//afficher_arbre(a);
-		/*	printf(
-		 "Nb ticks/seconde = %ld,  Nb ticks depart : %ld,Nb ticks intermediaires : %ld, Nb ticks final : %ld\n",
-		 clk_tck, (long) t1,(long) t2, (long) t3);
-		 //	printf("Temps consomme creation :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
-		 //	printf("Temps consomme calculerHauteur :(s) : %f \n", (double) (t3 - t2) / (double) clk_tck);
+	a = equilibrer(a);
+	sommeHauteur = 0;
+	calculer_hauteur(a);
+	printf("hauteur max après equi %d %d\n",a->hauteur,parcours(a));
+	hauteurMax = 0;
 
-		 printf("Temps avant equi :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
-		 printf("Temps apres equi :(s) : %f \n", (double) (t4 - t3) / (double) clk_tck);
-		 printf("hmax : %d",hmax);
-		 */
-		/*
+	rechercher_arbre_fichier(a, "a_rechercher.txt");
+	printf("somme hauteurs %d\n",sommeHauteur);
+	/*
+//afficher_arbre(a);
+	int k = 0;
+	for (k=0; k < 10; k++) {
+		t1 = clock();
+		int i;
+		for (i = 0; i < 100; i++) {
+			rechercher_arbre_fichier(a, "a_rechercher.txt");
+		}
+		t2 = clock();
+
+		//printf(
+			//	"Nb ticks/seconde = %ld,  Nb ticks depart : %ld,Nb ticks intermediaires : %ld",
+		//		clk_tck, (long) t1, (long) t2);
+		printf("%f\n", (double) (t2 - t1) / (double) clk_tck);
+	}*/
+	/*	printf(
+	 "Nb ticks/seconde = %ld,  Nb ticks depart : %ld,Nb ticks intermediaires : %ld, Nb ticks final : %ld\n",
+	 clk_tck, (long) t1,(long) t2, (long) t3);
+	 //	printf("Temps consomme creation :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
+	 //	printf("Temps consomme calculerHauteur :(s) : %f \n", (double) (t3 - t2) / (double) clk_tck);
+
+	 printf("Temps avant equi :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
+	 printf("Temps apres equi :(s) : %f \n", (double) (t4 - t3) / (double) clk_tck);
+	 printf("hmax : %d",hmax);
+	 */
+	/*
 
 
 		 rechercher_arbre_fichier(a, "a_rechercher.txt");
