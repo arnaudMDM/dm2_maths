@@ -19,6 +19,7 @@ typedef struct t_noeud
 	struct t_noeud *droit;
 } t_arbre;
 
+//renvoie le plus grand nombre entre x et y
 int max ( int x, int y )
 {
 	if ( x > y )
@@ -138,8 +139,7 @@ t_element * supprimer_min ( t_arbre** pa )
 	else
 	{
 		t_arbre *tmpArbre = *pa;
-		*pa = (*pa)->droit; //bizarre tout ça
-		//return tmpArbre->valeur;
+		*pa = (*pa)->droit;
 		return (detruire_noeud_arbre ( tmpArbre ));
 	}
 }
@@ -168,13 +168,11 @@ t_arbre *supprimer_arbre ( t_arbre *a, t_element *v )
 					if ( a->droit )
 					{
 						a->valeur = supprimer_min ( &(a->droit) );
-						//a->droit = supprimer_arbre(a->droit,a->valeur);
 						return a;
 					}
 					else
 					{
 						t_arbre *tmp = a->gauche;
-						//detruire_noeud_arbre(a);//faire plutot detruire arbre
 						detruire_arbre ( a );
 						return tmp;
 					}
@@ -182,7 +180,6 @@ t_arbre *supprimer_arbre ( t_arbre *a, t_element *v )
 				else
 				{
 					t_arbre *tmp = a->droit;
-					//detruire_noeud_arbre(a);//faire plutot detruire arbre
 					detruire_arbre ( a );
 					return tmp;
 				}
@@ -223,7 +220,8 @@ t_arbre *rechercher_arbre ( t_arbre *a, t_element *e )
 		return NULL;
 	}
 }
-long hauteurMax = 0;
+
+long hauteurMaxEltsTrouves = 0;
 // rechercher l'ensemble des mots du fichier de nom f
 void rechercher_arbre_fichier ( t_arbre *a, char *f )
 {
@@ -239,19 +237,25 @@ void rechercher_arbre_fichier ( t_arbre *a, char *f )
 			noeud = rechercher_arbre ( a, creer_elt_str ( chaine ) );
 			if ( noeud )
 			{
-				 hauteurMax += noeud->hauteur ;
+				printf ( "%s \t trouve dans l'arbre \n", chaine );
+				hauteurMaxEltsTrouves += noeud->hauteur; //ces instructions sont
+				//à enlever pour avoir une mesure du temps d'exécution de la fonction plus exacte
 			}
 			else
 			{
-				printf ( "%s \t non trouve dans l'arbre \n", chaine );
+				printf ( "%s \t non trouve dans l'arbre \n", chaine ); //cette instruction est
+				//à enlever pour avoir une mesure du temps d'exécution de la fonction plus exacte
 			}
 		}
 	}
 	fclose ( fichier );
 }
 
-// calculer la hauteur des noeuds du t_arbre a
 long long sommeHauteur = 0;
+int profondeurMax = 0; //donne la profondeur max d'un arbre
+int profondeurMin = 0; //donne la profondeur min d'un arbre
+int profondeurCourant = 0;
+// calculer la hauteur des noeuds du t_arbre a
 void calculer_hauteur ( t_arbre *a )
 {
 	if ( a )
@@ -259,11 +263,13 @@ void calculer_hauteur ( t_arbre *a )
 		int h = 0;
 		if ( a->gauche )
 		{
+			profondeurCourant += 1;
 			calculer_hauteur ( a->gauche );
 			h = a->gauche->hauteur;
 
 			if ( a->droit )
 			{
+				profondeurCourant += 1;
 				calculer_hauteur ( a->droit );
 				if ( h < a->droit->hauteur )
 				{
@@ -278,6 +284,7 @@ void calculer_hauteur ( t_arbre *a )
 		{
 			if ( a->droit )
 			{
+				profondeurCourant += 1;
 				calculer_hauteur ( a->droit );
 				a->hauteur = a->droit->hauteur + 1;
 				sommeHauteur += a->hauteur;
@@ -285,14 +292,22 @@ void calculer_hauteur ( t_arbre *a )
 			//Feuille
 			else
 			{
+				if ( profondeurMin == 0 )
+				{
+					profondeurMin = profondeurCourant;
+				}
+				else if ( profondeurCourant < profondeurMin )
+				{
+					profondeurMin = profondeurCourant;
+				}
 				a->hauteur = 0;
 			}
 		}
+		profondeurCourant -= 1;
 	}
 
 }
 
-int hmax = 0;
 // afficher l'arbre et la hauteur des noeuds
 void afficher_arbre ( t_arbre *a )
 {
@@ -303,10 +318,6 @@ void afficher_arbre ( t_arbre *a )
 			afficher_arbre ( a->gauche );
 		}
 		printf ( "hauteur : %d %s \n", a->hauteur, a->valeur->elt );
-		if ( hmax < a->hauteur )
-		{
-			hmax = a->hauteur;
-		}
 		if ( a->droit )
 		{
 			afficher_arbre ( a->droit );
@@ -365,6 +376,7 @@ t_arbre *rotation_gauche ( t_arbre *x )
 	return y;
 }
 
+//equlibre l'arbre en faisant des rotations droites ou gauches
 t_arbre * equilibrer ( t_arbre * a )
 {
 	if ( a )
@@ -382,7 +394,7 @@ t_arbre * equilibrer ( t_arbre * a )
 						                a->droit->hauteur ) )
 						{
 							a = rotation_droite ( a );
-							return equilibrer(a);
+							return equilibrer ( a );
 						}
 						else if ( a->droit->droit )
 						{
@@ -393,12 +405,12 @@ t_arbre * equilibrer ( t_arbre * a )
 								                a->gauche->hauteur ) )
 								{
 									a = rotation_gauche ( a );
-									return equilibrer(a);
+									return equilibrer ( a );
 								}
 								else
 								{
-									a->gauche = equilibrer(a->gauche);
-									a->droit = equilibrer(a->droit);
+									a->gauche = equilibrer ( a->gauche );
+									a->droit = equilibrer ( a->droit );
 									return (a);
 								}
 							}
@@ -408,20 +420,20 @@ t_arbre * equilibrer ( t_arbre * a )
 								        > a->gauche->hauteur )
 								{
 									a = rotation_gauche ( a );
-									return equilibrer(a);
+									return equilibrer ( a );
 								}
 								else
 								{
-									a->gauche = equilibrer(a->gauche);
-									a->droit = equilibrer(a->droit);
+									a->gauche = equilibrer ( a->gauche );
+									a->droit = equilibrer ( a->droit );
 									return (a);
 								}
 							}
 						}
 						else
 						{
-							a->gauche = equilibrer(a->gauche);
-							a->droit = equilibrer(a->droit);
+							a->gauche = equilibrer ( a->gauche );
+							a->droit = equilibrer ( a->droit );
 							return (a);
 						}
 					}
@@ -430,7 +442,7 @@ t_arbre * equilibrer ( t_arbre * a )
 						if ( a->gauche->gauche->hauteur > a->droit->hauteur )
 						{
 							a = rotation_droite ( a );
-							return equilibrer(a);
+							return equilibrer ( a );
 						}
 						else if ( a->droit->droit )
 						{
@@ -441,12 +453,12 @@ t_arbre * equilibrer ( t_arbre * a )
 								                a->gauche->hauteur ) )
 								{
 									a = rotation_gauche ( a );
-									return equilibrer(a);
+									return equilibrer ( a );
 								}
 								else
 								{
-									a->gauche = equilibrer(a->gauche);
-									a->droit = equilibrer(a->droit);
+									a->gauche = equilibrer ( a->gauche );
+									a->droit = equilibrer ( a->droit );
 									return (a);
 								}
 							}
@@ -456,20 +468,20 @@ t_arbre * equilibrer ( t_arbre * a )
 								        > a->gauche->hauteur )
 								{
 									a = rotation_gauche ( a );
-									return equilibrer(a);
+									return equilibrer ( a );
 								}
 								else
 								{
-									a->gauche = equilibrer(a->gauche);
-									a->droit = equilibrer(a->droit);
+									a->gauche = equilibrer ( a->gauche );
+									a->droit = equilibrer ( a->droit );
 									return (a);
 								}
 							}
 						}
 						else
 						{
-							a->gauche = equilibrer(a->gauche);
-							a->droit = equilibrer(a->droit);
+							a->gauche = equilibrer ( a->gauche );
+							a->droit = equilibrer ( a->droit );
 							return (a);
 						}
 					}
@@ -483,12 +495,12 @@ t_arbre * equilibrer ( t_arbre * a )
 						                a->gauche->hauteur ) )
 						{
 							a = rotation_gauche ( a );
-							return equilibrer(a);
+							return equilibrer ( a );
 						}
 						else
 						{
-							a->gauche = equilibrer(a->gauche);
-							a->droit = equilibrer(a->droit);
+							a->gauche = equilibrer ( a->gauche );
+							a->droit = equilibrer ( a->droit );
 							return (a);
 						}
 					}
@@ -497,86 +509,81 @@ t_arbre * equilibrer ( t_arbre * a )
 						if ( a->droit->droit->hauteur > a->gauche->hauteur )
 						{
 							a = rotation_gauche ( a );
-							return equilibrer(a);
+							return equilibrer ( a );
 						}
 						else
 						{
-							a->gauche = equilibrer(a->gauche);
-							a->droit = equilibrer(a->droit);
+							a->gauche = equilibrer ( a->gauche );
+							a->droit = equilibrer ( a->droit );
 							return (a);
 						}
 					}
 				}
 				else
 				{
-					a->gauche = equilibrer(a->gauche);
-					a->droit = equilibrer(a->droit);
-					return(a);
+					a->gauche = equilibrer ( a->gauche );
+					a->droit = equilibrer ( a->droit );
+					return (a);
 				}
 			}
-			else if(a->gauche->gauche)
+			else if ( a->gauche->gauche )
 			{
 				if ( a->gauche->droit )
 				{
-					if(a->gauche->gauche->hauteur > a->gauche->droit->hauteur)
+					if ( a->gauche->gauche->hauteur
+					        > a->gauche->droit->hauteur )
 					{
-						a = rotation_droite(a);
-						return equilibrer(a);
+						a = rotation_droite ( a );
+						return equilibrer ( a );
 					}
-					a->gauche = equilibrer(a->gauche);
-					return(a);
+					a->gauche = equilibrer ( a->gauche );
+					return (a);
 				}
 				else
 				{
-//					if(a->gauche->gauche->hauteur > 0)  //ça peut mieux équilibrer quand on a 3 noeuds qui se suivent exclusivement dans un sens
-//					{
-						a = rotation_droite(a);
-						return equilibrer(a);
-//					}
-					a->gauche = equilibrer(a->gauche);
-					return(a);
+					a = rotation_droite ( a );
+					return equilibrer ( a );
+					a->gauche = equilibrer ( a->gauche );
+					return (a);
 				}
 			}
 			else
 			{
-				a->gauche = equilibrer(a->gauche);
-				return(a);
+				a->gauche = equilibrer ( a->gauche );
+				return (a);
 			}
 		}
-		else if(a->droit)
+		else if ( a->droit )
 		{
-			if(a->droit->droit)
+			if ( a->droit->droit )
 			{
-				if(a->droit->gauche)
+				if ( a->droit->gauche )
 				{
-					if(a->droit->droit->hauteur > a->droit->gauche->hauteur)
+					if ( a->droit->droit->hauteur > a->droit->gauche->hauteur )
 					{
-						a = rotation_gauche(a);
-						return equilibrer(a);
+						a = rotation_gauche ( a );
+						return equilibrer ( a );
 					}
-					a->droit = equilibrer(a->droit);
-					return(a);
+					a->droit = equilibrer ( a->droit );
+					return (a);
 				}
 				else
 				{
-//					if(a->droit->droit->hauteur > 0)
-//					{
-						a = rotation_gauche(a);
-						return equilibrer(a);
-//					}
-					a->droit = equilibrer(a->droit);
-					return(a);
+					a = rotation_gauche ( a );
+					return equilibrer ( a );
+					a->droit = equilibrer ( a->droit );
+					return (a);
 				}
 			}
 			else
 			{
-				a->droit = equilibrer(a->droit);
-				return(a);
+				a->droit = equilibrer ( a->droit );
+				return (a);
 			}
 		}
 		else
 		{
-			return(a);
+			return (a);
 		}
 	}
 	else
@@ -585,68 +592,100 @@ t_arbre * equilibrer ( t_arbre * a )
 	}
 }
 
-int parcours(t_arbre *a)
+int parcours ( t_arbre *a )
 {
-	if(a)
+	if ( a )
 	{
-		return parcours(a->gauche) + parcours(a->droit)+1;
+		return parcours ( a->gauche ) + parcours ( a->droit ) + 1;
 	}
 	return 0;
 }
 
-	int main(int argc, char *argv[]) {
+void testRecherche ( t_arbre * a, char * nomFic )
+{
 	long clk_tck = CLOCKS_PER_SEC;
-	clock_t t1, t2, t3, t4;
-	srand(time(NULL));
+	clock_t t1, t2;
+	srand ( time ( NULL ) );
 
-	t_arbre *a = creer_arbre_fichier("dico1.txt");
-	calculer_hauteur(a);
-	printf("hauteur max avant equi %d %d\n",a->hauteur,parcours(a));
-	rechercher_arbre_fichier(a, "a_rechercher.txt");
-	printf("somme hauteurs %d\n",sommeHauteur);
+	hauteurMaxEltsTrouves = 0;
+	rechercher_arbre_fichier ( a, "a_rechercher.txt" );
+	printf ( "hauteur total des noeuds trouvés du fichier %s : %ld\n", nomFic,
+	        hauteurMaxEltsTrouves );
 
-	a = equilibrer(a);
-	sommeHauteur = 0;
-	calculer_hauteur(a);
-	printf("hauteur max après equi %d %d\n",a->hauteur,parcours(a));
-	hauteurMax = 0;
-
-	rechercher_arbre_fichier(a, "a_rechercher.txt");
-	printf("somme hauteurs %d\n",sommeHauteur);
-	/*
-//afficher_arbre(a);
-	int k = 0;
-	for (k=0; k < 10; k++) {
-		t1 = clock();
-		int i;
-		for (i = 0; i < 100; i++) {
-			rechercher_arbre_fichier(a, "a_rechercher.txt");
-		}
-		t2 = clock();
-
-		//printf(
-			//	"Nb ticks/seconde = %ld,  Nb ticks depart : %ld,Nb ticks intermediaires : %ld",
-		//		clk_tck, (long) t1, (long) t2);
-		printf("%f\n", (double) (t2 - t1) / (double) clk_tck);
-	}*/
-	/*	printf(
-	 "Nb ticks/seconde = %ld,  Nb ticks depart : %ld,Nb ticks intermediaires : %ld, Nb ticks final : %ld\n",
-	 clk_tck, (long) t1,(long) t2, (long) t3);
-	 //	printf("Temps consomme creation :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
-	 //	printf("Temps consomme calculerHauteur :(s) : %f \n", (double) (t3 - t2) / (double) clk_tck);
-
-	 printf("Temps avant equi :(s) : %f \n", (double) (t2 - t1) / (double) clk_tck);
-	 printf("Temps apres equi :(s) : %f \n", (double) (t4 - t3) / (double) clk_tck);
-	 printf("hmax : %d",hmax);
-	 */
-	/*
-
-
-		 rechercher_arbre_fichier(a, "a_rechercher.txt");
-		 * /
-		 a = equilibrer_arbre(a);
-		 //rechercher_arbre_fichier(a, "a_rechercher.txt");
-		 afficher_arbre(a);*/
-		detruire_arbre ( a );
-		return EXIT_SUCCESS;
+	t1 = clock ( );
+	int i;
+	for ( i = 0; i < 1000; i++ )
+	{
+		rechercher_arbre_fichier ( a, "a_rechercher.txt" );
 	}
+	t2 = clock ( );
+
+	printf ( "Temps d'exécution de la recherche du fichier %s :%f\n", nomFic,
+	        (double) (t2 - t1) / (double) clk_tck );
+	printf ( "\n" );
+}
+
+t_arbre *testEquilibrage ( t_arbre * a, char * nomFic )
+{
+	printf ( "profondeur min avant equilibrage du fichier %s : %d\n", nomFic,
+	        profondeurMin );
+	if ( a )
+	{
+		profondeurMax = a->hauteur;
+	}
+	printf ( "profondeur max avant equilibrage du fichier %s : %d\n", nomFic,
+	        profondeurMax );
+
+	profondeurMax = 0;
+	profondeurMin = 0;
+	profondeurCourant = 0;
+
+	a = equilibrer ( a );
+	calculer_hauteur ( a );
+
+	printf ( "profondeur min après equilibrage du fichier %s : %d\n", nomFic,
+	        profondeurMin );
+	if ( a )
+	{
+		profondeurMax = a->hauteur;
+	}
+	printf ( "profondeur max après equilibrage du fichier %s : %d\n \n", nomFic,
+	        profondeurMax );
+	printf ( "\n" );
+	return a;
+}
+
+int main ( int argc, char *argv[] )
+{
+	char *nomFic1 = malloc ( sizeof(MAXMOT) );
+	nomFic1 = "dico1.txt";
+	t_arbre *a1 = creer_arbre_fichier ( nomFic1 );
+	calculer_hauteur ( a1 );
+
+	char *nomFic2 = malloc ( sizeof(MAXMOT) );
+	nomFic2 = "dico2.txt";
+	t_arbre *a2 = creer_arbre_fichier ( nomFic2 );
+	calculer_hauteur ( a2 );
+
+	char *nomFic3 = malloc ( sizeof(MAXMOT) );
+	nomFic3 = "dico3.txt";
+	t_arbre *a3 = creer_arbre_fichier ( nomFic3 );
+	calculer_hauteur ( a3 );
+
+//	testRecherche(a1,nomFic1);
+//	testRecherche(a2,nomFic2);
+//	testRecherche(a3,nomFic3);
+
+	a1 = testEquilibrage ( a1, nomFic1 );
+	a2 = testEquilibrage ( a2, nomFic2 );
+	a3 = testEquilibrage ( a3, nomFic3 );
+
+//	testRecherche(a1,nomFic1);
+//	testRecherche(a2,nomFic2);
+//	testRecherche(a3,nomFic3);
+
+	detruire_arbre ( a1 );
+	detruire_arbre ( a2 );
+	detruire_arbre ( a3 );
+	return EXIT_SUCCESS;
+}
